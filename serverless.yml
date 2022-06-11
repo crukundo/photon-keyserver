@@ -1,6 +1,4 @@
 service: photon-keyserver
-app: photon-keyserver
-org: hasedev
 
 plugins:
   - serverless-domain-manager
@@ -13,10 +11,10 @@ provider:
   stage: prod
   region: eu-central-1
   environment:
-    TWILIO_ACCOUNT_SID: ${param:TWILIO_ACCOUNT_SID}
-    TWILIO_AUTH_TOKEN: ${param:TWILIO_AUTH_TOKEN}
-    TWILIO_FROM_NUMBER: ${param:TWILIO_FROM_NUMBER}
-    SES_FROM_EMAIL: ${param:SES_FROM_EMAIL}
+    # TWILIO_ACCOUNT_SID: ${param:TWILIO_ACCOUNT_SID}
+    # TWILIO_AUTH_TOKEN: ${param:TWILIO_AUTH_TOKEN}
+    # TWILIO_FROM_NUMBER: ${param:TWILIO_FROM_NUMBER}
+    # SES_FROM_EMAIL: ${param:SES_FROM_EMAIL}
     SES_REGION: ${opt:region, self:provider.region}
     DYNAMODB_TABLE_KEY: ${self:service}-${opt:stage, self:provider.stage}-key
     DYNAMODB_TABLE_USER: ${self:service}-${opt:stage, self:provider.stage}-user
@@ -43,91 +41,77 @@ functions:
   createKey:
     handler: handler.createKey
     events:
-     - http:
-         path: /v2/key
-         method: post
+      - http:
+          path: /v2/key
+          method: post
   getKey:
     handler: handler.getKey
     events:
-     - http:
-         path: /v2/key/{keyId}
-         method: get
+      - http:
+          path: /v2/key/{keyId}
+          method: get
   changePin:
     handler: handler.changePin
     events:
-     - http:
-         path: /v2/key/{keyId}
-         method: put
+      - http:
+          path: /v2/key/{keyId}
+          method: put
   createUser:
     handler: handler.createUser
     events:
-     - http:
-         path: /v2/key/{keyId}/user
-         method: post
+      - http:
+          path: /v2/key/{keyId}/user
+          method: post
   verifyUser:
     handler: handler.verifyUser
     events:
-     - http:
-         path: /v2/key/{keyId}/user/{userId}
-         method: put
+      - http:
+          path: /v2/key/{keyId}/user/{userId}
+          method: put
   resetPin:
     handler: handler.resetPin
     events:
-     - http:
-         path: /v2/key/{keyId}/user/{userId}/reset
-         method: get
+      - http:
+          path: /v2/key/{keyId}/user/{userId}/reset
+          method: get
   removeUser:
     handler: handler.removeUser
     events:
-     - http:
-         path: /v2/key/{keyId}/user/{userId}
-         method: delete
+      - http:
+          path: /v2/key/{keyId}/user/{userId}
+          method: delete
 
 resources:
   Resources:
     KeyDynamoDbTable:
-      Type: 'AWS::DynamoDB::Table'
+      Type: "AWS::DynamoDB::Table"
       DeletionPolicy: Retain
       Properties:
         AttributeDefinitions:
-          -
-            AttributeName: id
+          - AttributeName: id
             AttributeType: S
         KeySchema:
-          -
-            AttributeName: id
+          - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.DYNAMODB_TABLE_KEY}
     UserDynamoDbTable:
-      Type: 'AWS::DynamoDB::Table'
+      Type: "AWS::DynamoDB::Table"
       DeletionPolicy: Retain
       Properties:
         AttributeDefinitions:
-          -
-            AttributeName: id
+          - AttributeName: id
             AttributeType: S
         KeySchema:
-          -
-            AttributeName: id
+          - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.DYNAMODB_TABLE_USER}
 
 custom:
-  customDomain:
-    domainName: keys.mymattress.io
-    certificateName: '*.mymattress.io'
-    basePath: ''
-    stage: ${self:provider.stage}
-    createRoute53Record: true
-    endpointType: 'regional'
-    securityPolicy: tls_1_2
-    apiType: rest
-    autoDomain: false
   dynamodb:
     stages:
-      - prod
+      - test
     start:
       port: 8000
       inMemory: true
@@ -136,3 +120,5 @@ custom:
       migrate: true
       seed: true
       convertEmptyValues: true
+  serverless-offline:
+    noPrependStageInUrl: true
